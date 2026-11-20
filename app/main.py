@@ -32,8 +32,10 @@ def create_app():
         return jsonify(store.review(run_id,data['version'],data.get('decision')))
     @app.get('/api/archive/<run_id>/export.csv')
     def download(run_id):
+        from app.modules.m6_reconcile.compare import balance
         state=store.get(run_id)
-        if not state.get('reconcile',{}).get('balanced'):raise DomainError('UNBALANCED','对账未平')
+        if state.get('status')!='有效':raise DomainError('SUPERSEDED','批次已被新凭据取代，仅当前有效批次可导出',409)
+        if not balance(state)['balanced']:raise DomainError('UNBALANCED','对账未平')
         return Response(bundle(state),mimetype='text/csv; charset=utf-8',headers={'Content-Disposition':'attachment; filename=evidence.csv'})
     with app.app_context():
         if not store.history():

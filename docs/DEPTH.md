@@ -31,10 +31,14 @@
 | TRAP-26 | 旧版本复核 | 覆盖新结论 | 事务条件更新 | `app/store.py` | `tests/test_archive.py::test_stale_review` |
 | TRAP-23 | 休息与跨夜端点 | 重复或漏计 | 半开区间切片 | `app/modules/m4_segments/rules.py` | `tests/test_segments.py::test_break_removed` |
 | TRAP-19 | 假日与周末重叠 | 费率相加 | 假日优先 | `app/modules/m5_calculate/rules.py` | `tests/test_calculate.py::test_holiday_overrides_rest` |
+| TRAP-27 | 晚到与多留同班 | 净额后异常或加班消失 | 分列不互抵，异常行金额恒0 | `app/modules/m5_calculate/rules.py` | `tests/test_payable.py::test_late_and_extra_coexist_no_netting` |
+| TRAP-28 | 计划边界跨段 | 一段两用无法归类 | 计划起止参与切段 | `app/modules/m4_segments/rules.py` | `tests/test_payable.py::test_reconcile_attendance_identities` |
+| TRAP-29 | 补卡后旧结果残留 | 新旧并存重复付款 | 同事务取代置失效 | `app/store.py` | `tests/test_payable.py::test_supersede_and_keep_old` |
+| TRAP-30 | 封存信任库存标记 | 篡改后仍可导出 | 封存时重新对账 | `app/main.py` | `tests/test_payable.py::test_seal_rechecks_balance_not_stored_flag` |
 
 ## 对账规则
 
-输入行数=采纳+隔离+空行+重复表头+完全重复；业务总数与计算证据独立求和。隔离行保留来源行、ID、原因码与原值。
+输入行数=采纳+隔离+空行+重复表头+完全重复；业务总数与计算证据独立求和。隔离行保留来源行、ID、原因码与原值。班次异常与加班另作时间与金额对平：每班次 工作+休息重叠=打卡跨度、计划内+迟到+早退=计划跨度−休息重叠、加班段=计划外分钟；应发=Σ计薪行、异常行金额全为0、加班与异常分钟与考勤汇总一致。全部对平方可封存，封存导出时重新对账。
 
 ## 已知不覆盖
 
